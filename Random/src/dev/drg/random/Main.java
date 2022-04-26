@@ -1,109 +1,129 @@
 package dev.drg.random;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Properties;
 
-import javax.swing.*;
-import javax.swing.border.*;
-
-import dev.drg.random.components.MyDraggableComponent;
+import dev.drg.random.Item;
 
 public class Main {
+    public static void main(String[] args) {
+        // Screen size
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
-  private static ArrayList<MyDraggableComponent> items = new ArrayList<>();
+        // UI declaration
+        JFrame frame = new JFrame("Random");
+        JPanel mainPanel = new JPanel();
+        JPanel itemPanel = new JPanel();
+        JPanel reportPanel = new JPanel();
 
-  public static void main(String[] args) {
-    JFrame f = new JFrame("Swing Hello World");
+        // Focusable
+		mainPanel.setFocusable( true );
+		itemPanel.setFocusable( true );
+		reportPanel.setFocusable( true );
 
-    // by doing this, we prevent Swing from resizing
-    // our nice component
-    f.setLayout(null);
+        // Main panel: Layout
+        mainPanel.setLayout(new GridBagLayout());
+        GridBagConstraints cMainPanel = new GridBagConstraints();
+        cMainPanel.fill = GridBagConstraints.BOTH;
+        cMainPanel.weightx = 0.5;
+        cMainPanel.weighty = 0.5;
 
-    // Read item from file
-    Properties prop = new Properties();
-    String fileName = "app.config";
-    try (FileInputStream fis = new FileInputStream(fileName)) {
-        prop.load(fis);
-    } catch (FileNotFoundException ex) {
-        // FileNotFoundException catch is optional and can be collapsed
-        ex.printStackTrace();
-    } catch (IOException ex) {
-        // ex
-        ex.printStackTrace();
+        // Item panel; Layout
+        itemPanel.setBorder(BorderFactory.createTitledBorder("Manage Item"));
+        itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.PAGE_AXIS));
+
+        // Read item from file
+        Properties prop = new Properties();
+        String fileName = "app.config";
+        try (FileInputStream fis = new FileInputStream(fileName)) {
+            prop.load(fis);
+        } catch (FileNotFoundException ex) {
+            // FileNotFoundException catch is optional and can be collapsed
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            // ex
+            ex.printStackTrace();
+        }
+
+        boolean enable[] = new boolean[6];
+        int stock[] = new int[6];
+        String name[] = new String[6];
+        String img[] = new String[6];
+
+        for (String key : prop.stringPropertyNames()) {
+            String[] fields = key.split("[.]");
+            int index = Integer.parseInt(fields[1]);
+            String field = fields[2];
+
+            if (field.equals("enable"))
+                enable[index] = Boolean.parseBoolean(prop.getProperty(key));
+            if (field.equals("stock"))
+                stock[index] = Integer.parseInt(prop.getProperty(key));
+            if (field.equals("name"))
+                name[index] = prop.getProperty(key);
+            if (field.equals("img"))
+                img[index] = prop.getProperty(key);
+            // System.out.println(key + ": " + prop.getProperty(key));
+        }
+        // Items
+        for (int i = 0; i < 6; i++) {
+            if (name[i] != null) {
+                System.out.println(i);
+                itemPanel.add(new Item(i, name[i], stock[i], img[i], enable[i]));
+            }
+        }
+
+        // Add Item panel to Main panel
+        // itemPanel.setSize(50, 50);
+        // itemPanel.setMaximumSize(new Dimension(100, screenSize.height));
+        itemPanel.setPreferredSize(new Dimension(100, screenSize.height + 40));
+        JScrollPane itemScrollPane = new JScrollPane(itemPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        cMainPanel.gridx = 0;
+        cMainPanel.gridy = 0;
+        mainPanel.add(itemScrollPane, cMainPanel);
+
+        // Report panel
+        reportPanel.setBorder(BorderFactory.createTitledBorder("Report"));
+        cMainPanel.gridx = 1;
+        cMainPanel.gridy = 0;
+        mainPanel.add(reportPanel, cMainPanel);
+
+        // Main panel
+        mainPanel.setBackground(Color.BLACK);
+        frame.add(mainPanel);
+
+        mainPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+            }
+        });
+
+        itemPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+            }
+        });
+
+        reportPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                KeyboardFocusManager.getCurrentKeyboardFocusManager().clearGlobalFocusOwner();
+            }
+        });
+
+        // Frame settings
+        // frame.setSize(screenSize.width, screenSize.height);
+        frame.setSize(640, 480);
+        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        // f.setUndecorated(true); // Hide menu bar
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setVisible(true);
     }
-
-    int posX[] = new int[20];
-    int posY[] = new int[20];
-    int stock[] = new int[20];
-    String name[] = new String[20];
-    String img[] = new String[20];
-
-    for (String key: prop.stringPropertyNames()) {
-      String[] fields = key.split("[.]");
-      int index = Integer.parseInt(fields[1]);
-      String field = fields[2];
-      
-      if(field.equals("posX"))
-        posX[index] = Integer.parseInt(prop.getProperty(key));
-      if(field.equals("posY"))
-        posY[index] = Integer.parseInt(prop.getProperty(key));
-      if(field.equals("stock"))
-        stock[index] = Integer.parseInt(prop.getProperty(key));
-      if(field.equals("name"))
-        name[index] = prop.getProperty(key);
-      if(field.equals("img"))
-        img[index] = prop.getProperty(key);
-      // System.out.println(key + ": " + prop.getProperty(key));
-    }
-    // Items
-    for (int i = 0; i < 20; i++) {
-      if(name[i] != null) {
-        System.out.println(i);
-        f.add(new MyDraggableComponent(posX[i], posY[i], img[i], i, stock[i], name[i]));
-      }
-    }
-
-    // items.add(new MyDraggableComponent(50, 50, "/images/lol.png", 0, 10, "iPhone"));
-    // items.add(new MyDraggableComponent(50, 100, "/images/lol.png", 1, 20, "AirPods Pro"));
-    // for (MyDraggableComponent item : items) {
-    //   f.add(item);
-    // }
-
-    // Menu Bar
-    //Where the GUI is created:
-    JMenuBar menuBar;
-    JMenu menu, submenu;
-    JMenuItem menuItem;
-    JRadioButtonMenuItem rbMenuItem;
-    JCheckBoxMenuItem cbMenuItem;
-
-    //Create the menu bar.
-    menuBar = new JMenuBar();
-
-    //Build the first menu.
-    menu = new JMenu("Item");
-    menu.setMnemonic(KeyEvent.VK_A);
-    // menu.getAccessibleContext().setAccessibleDescription("The only menu in this program that has menu items");
-    menuBar.add(menu);
-
-    //a group of JMenuItems
-    menuItem = new JMenuItem("Add new item", KeyEvent.VK_T);
-    menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
-    // menuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
-    // menuItem.addItemListener(l);
-    menu.add(menuItem);
-
-    f.setJMenuBar(menuBar);
-    f.setExtendedState(JFrame.MAXIMIZED_BOTH); 
-    // f.setUndecorated(true);
-    f.setSize(500, 500);
-    f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    f.setVisible(true);
-  }
-
 }
