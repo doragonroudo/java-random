@@ -3,5 +3,9 @@
         // sssdff
         "res",
         "src"
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "opencsv-5.6.jar"
     ]
 }

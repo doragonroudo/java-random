@@ -1,12 +1,19 @@
 package dev.drg.random;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
+
 import java.awt.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import dev.drg.random.Item;
@@ -89,6 +96,38 @@ public class Main {
         cMainPanel.gridx = 0;
         cMainPanel.gridy = 0;
         mainPanel.add(itemScrollPane, cMainPanel);
+
+    
+        String[] columnNames = {"Timestamp", "Item", "Stock Balance"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        
+        try {
+            String line;
+            BufferedReader bufferreader = new BufferedReader(new FileReader("report.csv"));
+            int lineCount = 0;
+            while ((line = bufferreader.readLine()) != null) {     
+                System.out.println(line);
+                String[] row = line.split("[,]");
+                if (lineCount > 0) {
+                    model.addRow(row);
+                }
+                lineCount++;
+            }
+    
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        JTable table = new JTable(model);
+        JScrollPane reportScrollPane = new JScrollPane(table,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        cMainPanel.gridx = 0;
+        cMainPanel.gridy = 0;
+        reportPanel.setLayout(new BorderLayout());
+        reportPanel.add(reportScrollPane, BorderLayout.CENTER);
 
         // Report panel
         reportPanel.setBorder(BorderFactory.createTitledBorder("Report"));
