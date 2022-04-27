@@ -28,6 +28,7 @@ public class App implements Runnable{
         frame.setSize(width, height); // BG is 16:9 (1080x1920)
         // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
         // f.setUndecorated(true); // Hide menu bar
+        frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
@@ -40,7 +41,7 @@ public class App implements Runnable{
         frame.add(canvas);
         frame.pack();
 
-        backgroundImage = ImageLoader.loadImage("img/Start_After.png");
+        backgroundImage = ImageLoader.loadImage("/img/bg/1.jpg");
 
     }
 
@@ -65,7 +66,7 @@ public class App implements Runnable{
         // Draw here
 
         // g.fillRect(0, 0, 100, 100);
-        // g.drawImage(backgroundImage, 0, 0, null);
+        g.drawImage(backgroundImage, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
 
         // End draw
 
