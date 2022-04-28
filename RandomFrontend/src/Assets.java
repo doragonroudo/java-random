@@ -20,7 +20,7 @@ public class Assets {
 
         SpriteSheet bgSheet = new SpriteSheet(ImageLoader.loadImage("/img/bg_sprite.jpg"));
 		SpriteSheet btnSheet = new SpriteSheet(ImageLoader.loadImage("/img/btn_sprite.png"));
-		SpriteSheet flareSheet = new SpriteSheet(ImageLoader.loadImage("/img/flare_sprite.png"));
+		SpriteSheet flareSheet = new SpriteSheet(ImageLoader.loadImage("/img/flare_sprite_recolored.png"));
 		
         int width = 1080, height = 1920;
         int bwidth = 1613, bheight = 569;

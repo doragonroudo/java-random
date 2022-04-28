@@ -1,4 +1,7 @@
 import javax.swing.*;
+
+import org.w3c.dom.events.MouseEvent;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
@@ -40,9 +43,16 @@ public class App implements Runnable{
     Background bg;
     Background flare;
     Background flareEndless;
+    Background flareSmallEndless;
+    Background randomItems;
+    double randomTimer = 0;
     double flareTimer = 0;
+    double flareSmallTimer = 0;
     boolean flareEndlessEnabled = false;
-    boolean resultEnabled = false;
+    boolean flareEnabled = false;
+    boolean flareSmallEnabled = false;
+    boolean randomEnabled = false;
+    int randomResultIndex = 0;
 
     // States
     // private State gameState;
@@ -87,6 +97,7 @@ public class App implements Runnable{
         canvas.addMouseListener(mouseManager);
         canvas.addMouseMotionListener(mouseManager);
 
+
         Assets.init();
 
         // backgroundImage = ImageLoader.loadImage("/img/bg_sprite.jpg");
@@ -95,24 +106,46 @@ public class App implements Runnable{
         // Setup UI
 
         setUpUI();
-        
+
         bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight(), Assets.bg, 135);
-        flare = new Background((canvas.getWidth()/2)-(192*2), (canvas.getHeight()/2)-(192*2), 192*4, 192*4, Assets.flare, 135);
-        flareEndless = new Background((canvas.getWidth()/2)-(192*2), (canvas.getHeight()/2)-(192*2), 192*4, 192*4, Assets.flareEndless, 135);
+        flare = new Background((canvas.getWidth()/6)*3-(192*2), (canvas.getHeight()/12)*7-(192*2), 192*4, 192*4, Assets.flare, 135);
+        flareSmallEndless = new Background((canvas.getWidth()/6)*3-(192*1), (canvas.getHeight()/12)*7-(192*1), 192*2, 192*2, Assets.flare, 135);
+        flareEndless = new Background((canvas.getWidth()/6)*3-(192*2), (canvas.getHeight()/12)*7-(192*2), 192*4, 192*4, Assets.flareEndless, 135);
+
+        BufferedImage[] items = new BufferedImage[1];
+        String path = getImg()[getRandomAble().get(0)];
+        items[0] = (ImageLoader.loadImageFromExternalSource(path));
+        randomItems = new Background((canvas.getWidth()/2)-(75), (canvas.getHeight()/2), 150, 150, items, 135);
 
         uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
 
             @Override
             public synchronized void onClick() {
-                if(flareTimer > 0)
+                if(flareSmallTimer > 0)
                     return;
                 if(flareTimer <= 0 && flareEndlessEnabled) {
                     flareEndlessEnabled = false;
+                    randomEnabled = false;
                     System.out.println("flare" + flareEndlessEnabled);
                     flare.setCurrentFrame(0);
                     flareEndless.setCurrentFrame(0);
+                    flareSmallEndless.setCurrentFrame(0);
+
+                    getRandomAble().clear();
+                    itemManager.getObjects().clear();
                     return;
                 }
+
+                BufferedImage[] items = new BufferedImage[getRandomAble().size()];
+                int randItemCount = 0;
+                for (Integer index : getRandomAble()) {
+                    String path = getImg()[index];
+
+                    items[randItemCount] = (ImageLoader.loadImageFromExternalSource(path));
+                    randItemCount++;
+                }
+                randomItems = new Background((canvas.getWidth()/2)-(75), (canvas.getHeight()/2), 150, 150, items, 135);
+
                 // TODO: random logic
                 int min = 0; // inclusive
                 int max = getRandomAble().size()-1; // exclusive
@@ -132,15 +165,41 @@ public class App implements Runnable{
                  + " stock is " + getStock()[getRandomAble().get(result)]
                  + " stock will become " + Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 
+                randomResultIndex = result;
+                randomEnabled = true;
+                
                 Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 System.out.println("Update res: " + res);
 
+                flareSmallTimer = 20 * 5.00;
+                randomTimer = 20 * 5.00;
                 flareTimer = 20 * 5.00;
-                
-                getRandomAble().clear();
-                itemManager.getObjects().clear();
+                flareSmallEnabled = true;
             }
 
+        }));
+
+        uiManager.addObject(new UIImageButton(0, 0, canvas.getWidth(), canvas.getHeight(), new BufferedImage[2], new ClickListener() {
+
+            @Override
+            public void onClick() {
+                // TODO Auto-generated method stub
+                if(flareSmallTimer > 0)
+                    return;
+                if(flareTimer <= 0 && flareEndlessEnabled) {
+                    flareEndlessEnabled = false;
+                    randomEnabled = false;
+                    System.out.println("flare" + flareEndlessEnabled);
+                    flare.setCurrentFrame(0);
+                    flareEndless.setCurrentFrame(0);
+                    flareSmallEndless.setCurrentFrame(0);
+
+                    getRandomAble().clear();
+                    itemManager.getObjects().clear();
+                    return;
+                }
+            }
+            
         }));
     }
 
@@ -148,13 +207,32 @@ public class App implements Runnable{
         uiManager.tick();
         itemManager.tick();
 
-        if(flareTimer > 0) {
+        if(flareSmallTimer > 0) {
+            flareSmallEndless.tick();
+        }
+
+        if(flareSmallTimer <= 0 && flareSmallEnabled) {
+            flareSmallEnabled = false;
+            flareEnabled = true;
+        }
+
+        if(flareTimer > 0 && flareEnabled) {
             flare.tick();
+        }
+
+        if(flareTimer <= 0 && flareEnabled) {
+            flareEnabled = false;
             flareEndlessEnabled = true;
         }
 
         if(flareTimer <= 0 && flareEndlessEnabled) {
             flareEndless.tick();
+        }
+
+        if(randomTimer > 0 && randomEnabled) {
+            randomItems.tick();
+        } else {
+            randomItems.setCurrentFrame(randomResultIndex);
         }
         
         bg.tick();
@@ -186,12 +264,27 @@ public class App implements Runnable{
         }
         uiManager.render(g);
         itemManager.render(g);
-        if(flareTimer > 0) {
+
+        if(flareSmallTimer > 0 && flareSmallEnabled) {
+            flareSmallEndless.render(g);
+            flareSmallTimer--;
+        }
+
+        if(flareTimer > 0 && flareEnabled) {
             flare.render(g);
             flareTimer--;
         }
+        
         if(flareTimer <= 0 && flareEndlessEnabled) {
             flareEndless.render(g);
+        }
+
+        if(randomTimer > 0) {
+            randomTimer--;
+        }
+
+        if (randomEnabled) {
+            randomItems.render(g);
         }
         // End draw
 
@@ -412,9 +505,14 @@ public class App implements Runnable{
         int slotCount = 0;
         for (int i = 0; i < 6; i++) {
             if (enableT[i] && stockT[i] > 0) { // if item is enable 
+
                 itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(imgT[i]), null));
                 slotCount++;
             }
         }
+    }
+
+    public void mouseClicked(MouseEvent e){
+        System.out.println("mouse lcicked");
     }
 }
