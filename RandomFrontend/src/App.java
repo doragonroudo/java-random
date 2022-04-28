@@ -1,6 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Properties;
 
 public class App implements Runnable{
 
@@ -21,6 +27,8 @@ public class App implements Runnable{
 
     Background bg;
 
+    Properties itemProps;
+
     // States
     // private State gameState;
 
@@ -29,6 +37,7 @@ public class App implements Runnable{
         mouseManager = new MouseManager();
         uiManager = new UIManager();
         this.getMouseManager().setUIManager(uiManager);
+        this.itemProps = getProperty();
     }
 
     private void init() {
@@ -68,6 +77,89 @@ public class App implements Runnable{
         // backgroundImage = ImageLoader.loadImage("/img/bg_sprite.jpg");
         // bgSpriteSheet = new SpriteSheet(backgroundImage);
 
+        // Load from config file
+        boolean enable[] = new boolean[6];
+        int stock[] = new int[6];
+        String name[] = new String[6];
+        String img[] = new String[6];
+
+        for (String key : itemProps.stringPropertyNames()) {
+            String[] fields = key.split("[.]");
+            int index = Integer.parseInt(fields[1]);
+            String field = fields[2];
+
+            if (field.equals("enable"))
+                enable[index] = Boolean.parseBoolean(itemProps.getProperty(key));
+            if (field.equals("stock"))
+                stock[index] = Integer.parseInt(itemProps.getProperty(key));
+            if (field.equals("name"))
+                name[index] = itemProps.getProperty(key);
+            if (field.equals("img"))
+                img[index] = itemProps.getProperty(key);
+            // System.out.println(key + ": " + prop.getProperty(key));
+        }
+
+        // Count Enabled Items
+        int enabledItemCount = 0;
+        for (int i = 0; i < 6; i++) {
+            if (enable[i]) { // if item is enable 
+                enabledItemCount++;
+            }
+        }
+
+        // Setup layout for each 1-6 enabled 150x150 < img size
+        int posArrayX[][] =  {
+                            { (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 },
+                            { (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*3-75 },
+                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 },
+                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*3-75 },
+                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 }
+                        };
+        int posArrayY[][] =  {
+                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0 },
+                            { (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*7-0 },
+                            { (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*7-0, (canvas.getHeight()/12)*7-0 },
+                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*4-0},
+                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*4-0, (canvas.getHeight()/12)*4-0 }
+                        };
+        
+        // Set layout
+        int posX[] = {};
+        int posY[] = {};
+        if (enabledItemCount <= 2) {
+            posX = posArrayX[0];
+            posY = posArrayY[0];
+        } else if (enabledItemCount <= 3) {
+            posX = posArrayX[1];
+            posY = posArrayY[1];
+        } else if (enabledItemCount <= 4) {
+            posX = posArrayX[2];
+            posY = posArrayY[2];
+        } else if (enabledItemCount <= 5) {
+            posX = posArrayX[3];
+            posY = posArrayY[3];
+        } else if (enabledItemCount <= 6) {
+            posX = posArrayX[4];
+            posY = posArrayY[4];
+        }
+
+        // Assign layout
+        int slotCount = 0;
+        for (int i = 0; i < 6; i++) {
+            if (enable[i]) { // if item is enable 
+                uiManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(img[i]), new ClickListener() {
+
+                    @Override
+                    public void onClick() {
+                        // TODO Auto-generated method stub
+                        
+                    }
+                    
+                }));
+                slotCount++;
+            }
+        }
+        
         bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
         uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
 
@@ -166,4 +258,40 @@ public class App implements Runnable{
     public MouseManager getMouseManager() {
         return mouseManager;
     }
+
+    public void setProperty (String key, String value) {
+		// Write file
+		File configFile = new File("app.config");
+		try {
+			FileReader reader = new FileReader(configFile);
+			Properties props = new Properties();
+			props.load(reader);
+			reader.close();
+			props.setProperty(key, value);
+			FileWriter writer = new FileWriter(configFile);
+			props.store(writer, "item settings");
+			writer.close();
+		} catch (FileNotFoundException ex) {
+				// file does not exist
+		} catch (IOException ex) {
+				// I/O error
+		}
+	}
+
+    public Properties getProperty () {
+		// Write file
+		File configFile = new File("app.config");
+		try {
+			FileReader reader = new FileReader(configFile);
+			Properties props = new Properties();
+			props.load(reader);
+			reader.close();
+			return props;
+		} catch (FileNotFoundException ex) {
+				// file does not exist
+		} catch (IOException ex) {
+				// I/O error
+		}
+        return null;
+	}
 }
