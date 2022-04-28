@@ -6,7 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Properties;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class App implements Runnable{
 
@@ -24,10 +28,15 @@ public class App implements Runnable{
 
     private MouseManager mouseManager;
     private UIManager uiManager;
+    private UIManager itemManager;
+
+    private ArrayList<Integer> randomAble = new ArrayList<Integer>();
+    boolean enable[] = new boolean[6];
+    int stock[] = new int[6];
+    String name[] = new String[6];
+    String img[] = new String[6];
 
     Background bg;
-
-    Properties itemProps;
 
     // States
     // private State gameState;
@@ -36,8 +45,8 @@ public class App implements Runnable{
         Assets.init();
         mouseManager = new MouseManager();
         uiManager = new UIManager();
+        itemManager = new UIManager();
         this.getMouseManager().setUIManager(uiManager);
-        this.itemProps = getProperty();
     }
 
     private void init() {
@@ -77,11 +86,225 @@ public class App implements Runnable{
         // backgroundImage = ImageLoader.loadImage("/img/bg_sprite.jpg");
         // bgSpriteSheet = new SpriteSheet(backgroundImage);
 
+        // Setup UI
+
+        setUpUI();
+        
+        bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
+        uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
+
+            @Override
+            public synchronized void onClick() {
+                // TODO: random logic
+                int min = 0; // inclusive
+                int max = getRandomAble().size()-1; // exclusive
+                System.out.println("Random between:" + min + " and " + max);
+                int result = ThreadLocalRandom.current().nextInt(min, max + 1);
+
+                // printing initial value
+                System.out.print("The initial values in `randomAble` are : ");
+                for (Integer value : getRandomAble()) {
+                    System.out.print(value);
+                    System.out.print(" ");
+                }
+
+                System.out.println();
+                System.out.println("Randomed index is: " + result
+                 + " price is " + getRandomAble().get(result)
+                 + " stock is " + stock[result]
+                 + " stock will become " + Integer.toString(stock[result] - 1));
+                
+                Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(stock[result] - 1));
+                System.out.println("Update res: " + res);
+                
+                getRandomAble().clear();
+                for (Iterator<UIObject> iterator = itemManager.getObjects().iterator(); iterator.hasNext(); ) {
+                    UIObject value = iterator.next();
+                    iterator.remove();
+                }
+            }
+
+        }));
+    }
+
+    private void tick() {
+        uiManager.tick();
+        itemManager.tick();
+        bg.tick();
+        // System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
+    }
+
+    private void render() {
+        bs = canvas.getBufferStrategy();
+
+        if(bs == null) {
+            canvas.createBufferStrategy(3);
+            return;
+        }
+
+        g = bs.getDrawGraphics();
+
+        // Clear screen
+
+        g.clearRect(0, 0, width, height);
+
+        // Draw here
+
+        // g.fillRect(0, 0, 100, 100);
+        bg.render(g);
+
+        if(itemManager.getObjects().size() == 0) {
+            System.out.println("Setting up UI");
+            setUpUI();
+        }
+        uiManager.render(g);
+        itemManager.render(g);
+        // End draw
+
+        bs.show();
+        g.dispose();
+    }
+
+    public void run() {
+        init();
+
+        int fps = 60;
+        double timePerTick = 1000000000 / fps;
+        double delta = 0;
+        long now;
+        long lastTime = System.nanoTime();
+        long timer = 0;
+        int ticks = 0;
+
+        while(running) {
+            now = System.nanoTime();
+            delta += (now - lastTime) / timePerTick;
+            timer += now - lastTime;
+            lastTime = now;
+
+            if(delta >= 1) {
+                tick();
+                render();
+                ticks++;
+                delta--;
+            }
+            if(timer >= 1000000000) {
+                // System.out.println("FPS: " + ticks);
+                ticks = 0;
+                timer = 0;
+            }
+        }
+
+        stop();
+    }
+
+    public void setStock(int[] stock) {
+        this.stock = stock;
+    }
+    public void setEnable(boolean[] enable) {
+        this.enable= enable;
+    }
+    public void setName(String[] name) {
+        this.name = name;
+    }
+    public void setImg(String[] img) {
+        this.img = img;
+    }
+    public void setRandomAble(ArrayList<Integer> randomAble) {
+        this.randomAble = randomAble;
+    }
+
+    public int[] getStock() {
+        return this.stock;
+    }
+
+    public boolean[] getEnable() {
+        return this.enable;
+    }
+
+    public String[] getName() {
+        return this.name;
+    }
+
+    public String[] getImg() {
+        return this.img;
+    }
+
+    public ArrayList<Integer> getRandomAble() {
+        return this.randomAble;
+    }
+
+    public synchronized void start() {
+        if(running)
+         return;
+        running = true;
+        thread = new Thread(this);
+        thread.start();
+    }
+
+    public synchronized void stop() {
+        if(!running)
+         return;
+        running = false;
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized MouseManager getMouseManager() {
+        return mouseManager;
+    }
+
+    public synchronized boolean setProperty (String key, String value) {
+		// Write file
+		File configFile = new File("app.config");
+		try {
+			FileReader reader = new FileReader(configFile);
+			Properties props = new Properties();
+			props.load(reader);
+			reader.close();
+			props.setProperty(key, value);
+			FileWriter writer = new FileWriter(configFile);
+			props.store(writer, "item settings");
+			writer.close();
+            return true;
+		} catch (FileNotFoundException ex) {
+				// file does not exist
+		} catch (IOException ex) {
+				// I/O error
+		}
+        return false;
+	}
+
+    public synchronized Properties getProperty () {
+		// Write file
+		File configFile = new File("app.config");
+		try {
+			FileReader reader = new FileReader(configFile);
+			Properties props = new Properties();
+			props.load(reader);
+			reader.close();
+			return props;
+		} catch (FileNotFoundException ex) {
+				// file does not exist
+		} catch (IOException ex) {
+				// I/O error
+		}
+        return null;
+	}
+
+    public synchronized void setUpUI() {
+
         // Load from config file
-        boolean enable[] = new boolean[6];
-        int stock[] = new int[6];
-        String name[] = new String[6];
-        String img[] = new String[6];
+        Properties itemProps = getProperty();
+        
+        boolean enableT[] = new boolean[6];
+        int stockT[] = new int[6];
+        String nameT[] = new String[6];
+        String imgT[] = new String[6];
 
         for (String key : itemProps.stringPropertyNames()) {
             String[] fields = key.split("[.]");
@@ -89,23 +312,31 @@ public class App implements Runnable{
             String field = fields[2];
 
             if (field.equals("enable"))
-                enable[index] = Boolean.parseBoolean(itemProps.getProperty(key));
+                enableT[index] = Boolean.parseBoolean(itemProps.getProperty(key));
             if (field.equals("stock"))
-                stock[index] = Integer.parseInt(itemProps.getProperty(key));
+                stockT[index] = Integer.parseInt(itemProps.getProperty(key));
             if (field.equals("name"))
-                name[index] = itemProps.getProperty(key);
+                nameT[index] = itemProps.getProperty(key);
             if (field.equals("img"))
-                img[index] = itemProps.getProperty(key);
+                imgT[index] = itemProps.getProperty(key);
             // System.out.println(key + ": " + prop.getProperty(key));
         }
 
+        this.setEnable(enableT);
+        this.setStock(stockT);
+        this.setName(nameT);
+        this.setImg(imgT);
+
         // Count Enabled Items
         int enabledItemCount = 0;
+        ArrayList<Integer> randomAbleT = new ArrayList<Integer>();
         for (int i = 0; i < 6; i++) {
-            if (enable[i]) { // if item is enable 
+            if (enable[i] && stock[i] > 0) { // if item is enable and have stock
+                randomAbleT.add(i);
                 enabledItemCount++;
             }
         }
+        this.setRandomAble(randomAbleT);
 
         // Setup layout for each 1-6 enabled 150x150 < img size
         int posArrayX[][] =  {
@@ -146,152 +377,10 @@ public class App implements Runnable{
         // Assign layout
         int slotCount = 0;
         for (int i = 0; i < 6; i++) {
-            if (enable[i]) { // if item is enable 
-                uiManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(img[i]), new ClickListener() {
-
-                    @Override
-                    public void onClick() {
-                        // TODO Auto-generated method stub
-                        
-                    }
-                    
-                }));
+            if (enable[i] && stock[i] > 0) { // if item is enable 
+                itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(img[i]), null));
                 slotCount++;
             }
         }
-        
-        bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
-        uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
-
-            @Override
-            public void onClick() {
-                // random logic
-            }
-
-        }));
     }
-
-    private void tick() {
-        uiManager.tick();
-        bg.tick();
-        // System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
-    }
-
-    private void render() {
-        bs = canvas.getBufferStrategy();
-
-        if(bs == null) {
-            canvas.createBufferStrategy(3);
-            return;
-        }
-
-        g = bs.getDrawGraphics();
-
-        // Clear screen
-
-        g.clearRect(0, 0, width, height);
-
-        // Draw here
-
-        // g.fillRect(0, 0, 100, 100);
-        bg.render(g);
-        uiManager.render(g);
-        // End draw
-
-        bs.show();
-        g.dispose();
-    }
-
-    public void run() {
-        init();
-
-        int fps = 60;
-        double timePerTick = 1000000000 / fps;
-        double delta = 0;
-        long now;
-        long lastTime = System.nanoTime();
-        long timer = 0;
-        int ticks = 0;
-
-        while(running) {
-            now = System.nanoTime();
-            delta += (now - lastTime) / timePerTick;
-            timer += now - lastTime;
-            lastTime = now;
-
-            if(delta >= 1) {
-                tick();
-                render();
-                ticks++;
-                delta--;
-            }
-            if(timer >= 1000000000) {
-                // System.out.println("FPS: " + ticks);
-                ticks = 0;
-                timer = 0;
-            }
-        }
-
-        stop();
-    }
-
-    public synchronized void start() {
-        if(running)
-         return;
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public synchronized void stop() {
-        if(!running)
-         return;
-        running = false;
-        try {
-            thread.join();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public MouseManager getMouseManager() {
-        return mouseManager;
-    }
-
-    public void setProperty (String key, String value) {
-		// Write file
-		File configFile = new File("app.config");
-		try {
-			FileReader reader = new FileReader(configFile);
-			Properties props = new Properties();
-			props.load(reader);
-			reader.close();
-			props.setProperty(key, value);
-			FileWriter writer = new FileWriter(configFile);
-			props.store(writer, "item settings");
-			writer.close();
-		} catch (FileNotFoundException ex) {
-				// file does not exist
-		} catch (IOException ex) {
-				// I/O error
-		}
-	}
-
-    public Properties getProperty () {
-		// Write file
-		File configFile = new File("app.config");
-		try {
-			FileReader reader = new FileReader(configFile);
-			Properties props = new Properties();
-			props.load(reader);
-			reader.close();
-			return props;
-		} catch (FileNotFoundException ex) {
-				// file does not exist
-		} catch (IOException ex) {
-				// I/O error
-		}
-        return null;
-	}
 }
