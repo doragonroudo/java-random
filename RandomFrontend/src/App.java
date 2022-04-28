@@ -85,19 +85,21 @@ public class App implements Runnable{
         canvas = new Canvas();
 
         // Frame settings
-        // frame.setSize(screenSize.width, screenSize.height);
-        frame.setSize(width, height); // BG is 16:9 (1080x1920)
-        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
-        // f.setUndecorated(true); // Hide menu bar
+        // Screen size
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(screenSize.width, screenSize.height);
+        // frame.setSize(width, height); // BG is 16:9 (1080x1920)
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        frame.setUndecorated(true); // Hide menu bar
         frame.setLayout(new BorderLayout());
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
         // Canvas settings
-        canvas.setPreferredSize(new Dimension(width, height));
-        canvas.setMaximumSize(new Dimension(width, height));
-        canvas.setMinimumSize(new Dimension(width, height));
+        canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
+        canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
+        canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
 
         frame.add(canvas);
         frame.pack();
@@ -553,7 +555,7 @@ public class App implements Runnable{
             try {
                 Clip clip = AudioSystem.getClip();
                 AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-                App.class.getResourceAsStream("/wav/" + url));
+                App.class.getResource("/wav/" + url));
                 clip.open(inputStream);
                 if(isLoop)
                     clip.loop(Clip.LOOP_CONTINUOUSLY); 

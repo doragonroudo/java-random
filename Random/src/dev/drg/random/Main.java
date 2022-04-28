@@ -24,7 +24,7 @@ public class Main {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
         // UI declaration
-        JFrame frame = new JFrame("Random");
+        JFrame frame = new JFrame("Random Backend");
         JPanel mainPanel = new JPanel();
         JPanel itemPanel = new JPanel();
         JPanel reportPanel = new JPanel();
@@ -158,11 +158,11 @@ public class Main {
         });
 
         // Frame settings
-        // frame.setSize(screenSize.width, screenSize.height);
-        frame.setSize(640, 480);
-        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        frame.setSize(screenSize.width, screenSize.height);
+        // frame.setSize(640, 480);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
         // f.setUndecorated(true); // Hide menu bar
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
 }
