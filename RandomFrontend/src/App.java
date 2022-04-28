@@ -129,10 +129,10 @@ public class App implements Runnable{
                 System.out.println();
                 System.out.println("Randomed index is: " + result
                  + " price is " + getRandomAble().get(result)
-                 + " stock is " + stock[result]
-                 + " stock will become " + Integer.toString(stock[result] - 1));
+                 + " stock is " + getStock()[getRandomAble().get(result)]
+                 + " stock will become " + Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 
-                Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(stock[result] - 1));
+                Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 System.out.println("Update res: " + res);
 
                 flareTimer = 20 * 5.00;
@@ -365,7 +365,7 @@ public class App implements Runnable{
         int enabledItemCount = 0;
         ArrayList<Integer> randomAbleT = new ArrayList<Integer>();
         for (int i = 0; i < 6; i++) {
-            if (enable[i] && stock[i] > 0) { // if item is enable and have stock
+            if (enableT[i] && stockT[i] > 0) { // if item is enable and have stock
                 randomAbleT.add(i);
                 enabledItemCount++;
             }
@@ -412,7 +412,7 @@ public class App implements Runnable{
         int slotCount = 0;
         for (int i = 0; i < 6; i++) {
             if (enableT[i] && stockT[i] > 0) { // if item is enable 
-                itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(img[i]), null));
+                itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(imgT[i]), null));
                 slotCount++;
             }
         }
