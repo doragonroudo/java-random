@@ -16,9 +16,20 @@ public class App implements Runnable{
     private BufferStrategy bs;
     private Graphics g;
 
-    private BufferedImage backgroundImage;
+    private MouseManager mouseManager;
+
+    Background bg;
+
+    // States
+    // private State gameState;
+
+    public App() {
+        mouseManager = new MouseManager();
+    }
 
     private void init() {
+
+        // Start Frame
 
         frame = new JFrame("Random Frontend");
         canvas = new Canvas();
@@ -41,12 +52,25 @@ public class App implements Runnable{
         frame.add(canvas);
         frame.pack();
 
-        backgroundImage = ImageLoader.loadImage("/img/bg/1.jpg");
+        // End Frame
+
+        frame.addMouseListener(mouseManager);
+        frame.addMouseMotionListener(mouseManager);
+        canvas.addMouseListener(mouseManager);
+        canvas.addMouseMotionListener(mouseManager);
+
+        Assets.init();
+
+        // backgroundImage = ImageLoader.loadImage("/img/bg_sprite.jpg");
+        // bgSpriteSheet = new SpriteSheet(backgroundImage);
+
+        bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
 
     }
 
     private void tick() {
-
+        bg.tick();
+        System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
     }
 
     private void render() {
@@ -66,8 +90,7 @@ public class App implements Runnable{
         // Draw here
 
         // g.fillRect(0, 0, 100, 100);
-        g.drawImage(backgroundImage, 0, 0, canvas.getWidth(), canvas.getHeight(), null);
-
+        bg.render(g);
         // End draw
 
         bs.show();
@@ -77,9 +100,31 @@ public class App implements Runnable{
     public void run() {
         init();
 
+        int fps = 60;
+        double timePerTick = 1000000000 / fps;
+        double delta = 0;
+        long now;
+        long lastTime = System.nanoTime();
+        long timer = 0;
+        int ticks = 0;
+
         while(running) {
-            tick();
-            render();
+            now = System.nanoTime();
+            delta += (now - lastTime) / timePerTick;
+            timer += now - lastTime;
+            lastTime = now;
+
+            if(delta >= 1) {
+                tick();
+                render();
+                ticks++;
+                delta--;
+            }
+            if(timer >= 1000000000) {
+                // System.out.println("FPS: " + ticks);
+                ticks = 0;
+                timer = 0;
+            }
         }
 
         stop();
@@ -103,5 +148,9 @@ public class App implements Runnable{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public MouseManager getMouseManager() {
+        return mouseManager;
     }
 }
