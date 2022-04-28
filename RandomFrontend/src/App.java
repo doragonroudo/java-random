@@ -11,13 +11,16 @@ import org.w3c.dom.events.MouseEvent;
 import java.awt.*;
 import java.awt.Dimension;
 import java.awt.image.*;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -182,6 +185,24 @@ public class App implements Runnable{
                 
                 Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 System.out.println("Update res: " + res);
+
+                // Save to csv
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                // System.out.println(timestamp);
+                String dataToWrite = timestamp + "," + getName()[getRandomAble().get(result)] + "," + Integer.toString(getStock()[getRandomAble().get(result)] - 1);
+
+                try {
+                    // you want to output to file
+                    BufferedWriter writer = new BufferedWriter(new FileWriter("report.csv", true));
+                    // but let's print to console while debugging
+                    // BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(System.out));
+                    writer.write(dataToWrite);
+                    writer.newLine();
+                    writer.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
 
                 flareSmallTimer = 20 * 8.00;
                 randomTimer = 20 * 8.00;
