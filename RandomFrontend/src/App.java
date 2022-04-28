@@ -1,3 +1,9 @@
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.*;
 
 import org.w3c.dom.events.MouseEvent;
@@ -10,6 +16,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -69,7 +77,7 @@ public class App implements Runnable{
     private void init() {
 
         // Start Frame
-
+        playSound("bg_fmt.wav", true);
         frame = new JFrame("Random Frontend");
         canvas = new Canvas();
 
@@ -122,6 +130,7 @@ public class App implements Runnable{
 
             @Override
             public synchronized void onClick() {
+
                 if(flareSmallTimer > 0)
                     return;
                 if(flareTimer <= 0 && flareEndlessEnabled) {
@@ -136,6 +145,8 @@ public class App implements Runnable{
                     itemManager.getObjects().clear();
                     return;
                 }
+
+                playSound("slotmachine_long_fmt.wav", false);
 
                 BufferedImage[] items = new BufferedImage[getRandomAble().size()];
                 int randItemCount = 0;
@@ -172,8 +183,8 @@ public class App implements Runnable{
                 Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 System.out.println("Update res: " + res);
 
-                flareSmallTimer = 20 * 5.00;
-                randomTimer = 20 * 5.00;
+                flareSmallTimer = 20 * 8.00;
+                randomTimer = 20 * 8.00;
                 flareTimer = 20 * 5.00;
                 flareSmallEnabled = true;
             }
@@ -513,7 +524,24 @@ public class App implements Runnable{
         }
     }
 
-    public void mouseClicked(MouseEvent e){
-        System.out.println("mouse lcicked");
-    }
+    public static synchronized void playSound(final String url, boolean isLoop) {
+        new Thread(new Runnable() {
+        // The wrapper thread is unnecessary, unless it blocks on the
+        // Clip finishing; see comments.
+            public void run() {
+            try {
+                Clip clip = AudioSystem.getClip();
+                AudioInputStream inputStream = AudioSystem.getAudioInputStream(
+                App.class.getResourceAsStream("/wav/" + url));
+                clip.open(inputStream);
+                if(isLoop)
+                    clip.loop(Clip.LOOP_CONTINUOUSLY); 
+                else
+                    clip.start();
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+            }
+        }).start();
+        }
 }
