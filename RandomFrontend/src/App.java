@@ -29,6 +29,7 @@ public class App implements Runnable{
     private MouseManager mouseManager;
     private UIManager uiManager;
     private UIManager itemManager;
+    private UIManager resultManager;
 
     private ArrayList<Integer> randomAble = new ArrayList<Integer>();
     boolean enable[] = new boolean[6];
@@ -37,6 +38,11 @@ public class App implements Runnable{
     String img[] = new String[6];
 
     Background bg;
+    Background flare;
+    Background flareEndless;
+    double flareTimer = 0;
+    boolean flareEndlessEnabled = false;
+    boolean resultEnabled = false;
 
     // States
     // private State gameState;
@@ -90,11 +96,23 @@ public class App implements Runnable{
 
         setUpUI();
         
-        bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
+        bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight(), Assets.bg, 135);
+        flare = new Background((canvas.getWidth()/2)-(192*2), (canvas.getHeight()/2)-(192*2), 192*4, 192*4, Assets.flare, 135);
+        flareEndless = new Background((canvas.getWidth()/2)-(192*2), (canvas.getHeight()/2)-(192*2), 192*4, 192*4, Assets.flareEndless, 135);
+
         uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
 
             @Override
             public synchronized void onClick() {
+                if(flareTimer > 0)
+                    return;
+                if(flareTimer <= 0 && flareEndlessEnabled) {
+                    flareEndlessEnabled = false;
+                    System.out.println("flare" + flareEndlessEnabled);
+                    flare.setCurrentFrame(0);
+                    flareEndless.setCurrentFrame(0);
+                    return;
+                }
                 // TODO: random logic
                 int min = 0; // inclusive
                 int max = getRandomAble().size()-1; // exclusive
@@ -116,6 +134,8 @@ public class App implements Runnable{
                 
                 Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(stock[result] - 1));
                 System.out.println("Update res: " + res);
+
+                flareTimer = 20 * 5.00;
                 
                 getRandomAble().clear();
                 for (Iterator<UIObject> iterator = itemManager.getObjects().iterator(); iterator.hasNext(); ) {
@@ -130,6 +150,16 @@ public class App implements Runnable{
     private void tick() {
         uiManager.tick();
         itemManager.tick();
+
+        if(flareTimer > 0) {
+            flare.tick();
+            flareEndlessEnabled = true;
+        }
+
+        if(flareTimer <= 0 && flareEndlessEnabled) {
+            flareEndless.tick();
+        }
+        
         bg.tick();
         // System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
     }
@@ -159,6 +189,13 @@ public class App implements Runnable{
         }
         uiManager.render(g);
         itemManager.render(g);
+        if(flareTimer > 0) {
+            flare.render(g);
+            flareTimer--;
+        }
+        if(flareTimer <= 0 && flareEndlessEnabled) {
+            flareEndless.render(g);
+        }
         // End draw
 
         bs.show();
@@ -300,7 +337,7 @@ public class App implements Runnable{
 
         // Load from config file
         Properties itemProps = getProperty();
-        
+
         boolean enableT[] = new boolean[6];
         int stockT[] = new int[6];
         String nameT[] = new String[6];
