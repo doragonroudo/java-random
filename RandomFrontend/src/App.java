@@ -138,10 +138,7 @@ public class App implements Runnable{
                 flareTimer = 20 * 5.00;
                 
                 getRandomAble().clear();
-                for (Iterator<UIObject> iterator = itemManager.getObjects().iterator(); iterator.hasNext(); ) {
-                    UIObject value = iterator.next();
-                    iterator.remove();
-                }
+                itemManager.getObjects().clear();
             }
 
         }));
