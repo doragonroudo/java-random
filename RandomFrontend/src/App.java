@@ -411,7 +411,7 @@ public class App implements Runnable{
         // Assign layout
         int slotCount = 0;
         for (int i = 0; i < 6; i++) {
-            if (enable[i] && stock[i] > 0) { // if item is enable 
+            if (enableT[i] && stockT[i] > 0) { // if item is enable 
                 itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(img[i]), null));
                 slotCount++;
             }
