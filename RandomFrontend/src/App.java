@@ -3,6 +3,7 @@ import javax.swing.*;
 import org.w3c.dom.events.MouseEvent;
 
 import java.awt.*;
+import java.awt.Dimension;
 import java.awt.image.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,7 +45,7 @@ public class App implements Runnable{
     Background flare;
     Background flareEndless;
     Background flareSmallEndless;
-    Background randomItems;
+    ScaledImage randomItems;
     double randomTimer = 0;
     double flareTimer = 0;
     double flareSmallTimer = 0;
@@ -115,7 +116,7 @@ public class App implements Runnable{
         BufferedImage[] items = new BufferedImage[1];
         String path = getImg()[getRandomAble().get(0)];
         items[0] = (ImageLoader.loadImageFromExternalSource(path));
-        randomItems = new Background((canvas.getWidth()/2)-(75), (canvas.getHeight()/2), 150, 150, items, 135);
+        randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+100, 200, 200, items, 135);
 
         uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
 
@@ -144,7 +145,7 @@ public class App implements Runnable{
                     items[randItemCount] = (ImageLoader.loadImageFromExternalSource(path));
                     randItemCount++;
                 }
-                randomItems = new Background((canvas.getWidth()/2)-(75), (canvas.getHeight()/2), 150, 150, items, 135);
+                randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+100, 200, 200, items, 135);
 
                 // TODO: random logic
                 int min = 0; // inclusive
@@ -467,18 +468,18 @@ public class App implements Runnable{
 
         // Setup layout for each 1-6 enabled 150x150 < img size
         int posArrayX[][] =  {
-                            { (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 },
-                            { (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*3-75 },
-                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 },
-                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*3-75 },
-                            { (canvas.getWidth()/6)*1-75, (canvas.getWidth()/6)*5-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75, (canvas.getWidth()/6)*2-75, (canvas.getWidth()/6)*4-75 }
+                            { (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0 },
+                            { (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0, (canvas.getWidth()/6)*3-0 },
+                            { (canvas.getWidth()/6)*1-0, (canvas.getWidth()/6)*5-0, (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0 },
+                            { (canvas.getWidth()/6)*1-0, (canvas.getWidth()/6)*5-0, (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0, (canvas.getWidth()/6)*3-0 },
+                            { (canvas.getWidth()/6)*1-0, (canvas.getWidth()/6)*5-0, (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0, (canvas.getWidth()/6)*2-0, (canvas.getWidth()/6)*4-0 }
                         };
         int posArrayY[][] =  {
-                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0 },
-                            { (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*7-0 },
-                            { (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*5-0, (canvas.getHeight()/12)*7-0, (canvas.getHeight()/12)*7-0 },
-                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*4-0},
-                            { (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*6-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*8-0, (canvas.getHeight()/12)*4-0, (canvas.getHeight()/12)*4-0 }
+                            { (canvas.getHeight()/12)*6+75, (canvas.getHeight()/12)*6+75 },
+                            { (canvas.getHeight()/12)*5+75, (canvas.getHeight()/12)*5+75, (canvas.getHeight()/12)*7+75 },
+                            { (canvas.getHeight()/12)*5+75, (canvas.getHeight()/12)*5+75, (canvas.getHeight()/12)*7+75, (canvas.getHeight()/12)*7+75 },
+                            { (canvas.getHeight()/12)*6+75, (canvas.getHeight()/12)*6+75, (canvas.getHeight()/12)*8+75, (canvas.getHeight()/12)*8+75, (canvas.getHeight()/12)*4+75},
+                            { (canvas.getHeight()/12)*6+75, (canvas.getHeight()/12)*6+75, (canvas.getHeight()/12)*8+75, (canvas.getHeight()/12)*8+75, (canvas.getHeight()/12)*4+75, (canvas.getHeight()/12)*4+75 }
                         };
         
         // Set layout

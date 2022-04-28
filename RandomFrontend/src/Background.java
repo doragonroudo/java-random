@@ -1,5 +1,6 @@
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.Dimension;
 
 public class Background extends Entity{
     
@@ -17,7 +18,9 @@ public class Background extends Entity{
 
     @Override
     public void render(Graphics g) {
-        g.drawImage(animBg.getCurrentFrame(), (int) x, (int) y, width, height, null);
+        g.drawImage(animBg.getCurrentFrame(), (int) x, (int) y, 
+        width, 
+        height, null);
     }
 
     public void setCurrentFrame(int index){

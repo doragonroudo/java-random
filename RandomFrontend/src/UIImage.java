@@ -1,3 +1,4 @@
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
@@ -18,9 +19,17 @@ public class UIImage extends UIObject {
 	@Override
 	public void render(Graphics g) {
 		if(hovering)
-			g.drawImage(image, (int) x, (int) y, width, height, null);
+            g.drawImage(image,
+            (int) x - (ImageLoader.getScaledDimensionWidth(new Dimension( image.getWidth(), image.getHeight()), new Dimension(width, height))/2),
+            (int) y - (ImageLoader.getScaledDimensionHeight(new Dimension( image.getWidth(), image.getHeight() ), new Dimension(width, height))/2), 
+            ImageLoader.getScaledDimensionWidth(new Dimension( image.getWidth(), image.getHeight()), new Dimension(width, height)), 
+            ImageLoader.getScaledDimensionHeight(new Dimension( image.getWidth(), image.getHeight() ), new Dimension(width, height)), null);
 		else
-			g.drawImage(image, (int) x, (int) y, width, height, null);
+            g.drawImage(image,
+            (int) x - (ImageLoader.getScaledDimensionWidth(new Dimension( image.getWidth(), image.getHeight()), new Dimension(width, height))/2),
+            (int) y - (ImageLoader.getScaledDimensionHeight(new Dimension( image.getWidth(), image.getHeight() ), new Dimension(width, height))/2), 
+            ImageLoader.getScaledDimensionWidth(new Dimension( image.getWidth(), image.getHeight()), new Dimension(width, height)), 
+            ImageLoader.getScaledDimensionHeight(new Dimension( image.getWidth(), image.getHeight() ), new Dimension(width, height)), null);
 	}
 
 	@Override
