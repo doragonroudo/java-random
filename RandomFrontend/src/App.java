@@ -17,6 +17,7 @@ public class App implements Runnable{
     private Graphics g;
 
     private MouseManager mouseManager;
+    private UIManager uiManager;
 
     Background bg;
 
@@ -24,7 +25,10 @@ public class App implements Runnable{
     // private State gameState;
 
     public App() {
+        Assets.init();
         mouseManager = new MouseManager();
+        uiManager = new UIManager();
+        this.getMouseManager().setUIManager(uiManager);
     }
 
     private void init() {
@@ -65,12 +69,20 @@ public class App implements Runnable{
         // bgSpriteSheet = new SpriteSheet(backgroundImage);
 
         bg = new Background(0, 0, canvas.getWidth(), canvas.getHeight());
+        uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
 
+            @Override
+            public void onClick() {
+                // random logic
+            }
+
+        }));
     }
 
     private void tick() {
+        uiManager.tick();
         bg.tick();
-        System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
+        // System.out.println(this.getMouseManager().getMouseX() + ", " + this.getMouseManager().getMouseY());
     }
 
     private void render() {
@@ -91,6 +103,7 @@ public class App implements Runnable{
 
         // g.fillRect(0, 0, 100, 100);
         bg.render(g);
+        uiManager.render(g);
         // End draw
 
         bs.show();
