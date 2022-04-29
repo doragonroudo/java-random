@@ -44,7 +44,6 @@ public class App implements Runnable{
     private MouseManager mouseManager;
     private UIManager uiManager;
     private UIManager itemManager;
-    private UIManager resultManager;
 
     private ArrayList<Integer> randomAble = new ArrayList<Integer>();
     boolean enable[] = new boolean[6];
@@ -87,19 +86,24 @@ public class App implements Runnable{
         // Frame settings
         // Screen size
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize.width, screenSize.height);
-        // frame.setSize(width, height); // BG is 16:9 (1080x1920)
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
-        frame.setUndecorated(true); // Hide menu bar
+        // frame.setSize(screenSize.width, screenSize.height);
+        frame.setSize(width, height); // BG is 16:9 (1080x1920)
+        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        // frame.setUndecorated(true); // Hide menu bar
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
         // Canvas settings
-        canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
-        canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
-        canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
+
+
+        canvas.setPreferredSize(new Dimension(width, height));
+        canvas.setMaximumSize(new Dimension(width, height));
+        canvas.setMinimumSize(new Dimension(width, height));
 
         frame.add(canvas);
         frame.pack();
@@ -129,16 +133,16 @@ public class App implements Runnable{
         BufferedImage[] items = new BufferedImage[1];
         String path = getImg()[getRandomAble().get(0)];
         items[0] = (ImageLoader.loadImageFromExternalSource(path));
-        randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+100, 200, 200, items, 135);
+        randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+((canvas.getWidth()/3)/2), canvas.getWidth()/3, canvas.getWidth()/3, items, 135);
 
-        uiManager.addObject(new UIImageButton((canvas.getWidth()/2) - (283/2), (canvas.getHeight() - 100 - 50), 283, 100, Assets.randBtn, new ClickListener(){
+        uiManager.addObject(new UIImageButton((canvas.getWidth()/6)*3 - (283/2), ((canvas.getHeight()/12)*7 - (100/2)), 283, 100, Assets.randBtn, new ClickListener(){
 
             @Override
             public synchronized void onClick() {
 
-                if(flareSmallTimer > 0)
+                if(flareSmallEnabled || flareEnabled )
                     return;
-                if(flareTimer <= 0 && flareEndlessEnabled) {
+                if(flareEndlessEnabled) {
                     flareEndlessEnabled = false;
                     randomEnabled = false;
                     System.out.println("flare" + flareEndlessEnabled);
@@ -153,15 +157,35 @@ public class App implements Runnable{
 
                 playSound("slotmachine_long_fmt.wav", false);
 
-                BufferedImage[] items = new BufferedImage[getRandomAble().size()];
-                int randItemCount = 0;
-                for (Integer index : getRandomAble()) {
-                    String path = getImg()[index];
+                boolean[] enableT2 = getEnable();
 
-                    items[randItemCount] = (ImageLoader.loadImageFromExternalSource(path));
-                    randItemCount++;
+                int enabledSize = 0;
+                int enabledIndex[] = new int[6];
+                for (int i = 0; i < 6; i++) {
+                    if(enableT2[i]) { // if index i is enabled
+                        enabledIndex[enabledSize] = i;
+                        enabledSize++;
+                    }
                 }
-                randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+100, 200, 200, items, 135);
+
+                BufferedImage[] items = new BufferedImage[enabledSize];
+                int randItemCount = 0;
+                for (int i = 0; i < enableT2.length; i++) {
+                    if(enableT2[i]) { // if index i is enabled
+                        String path = getImg()[i];
+                        items[randItemCount] = (ImageLoader.loadImageFromExternalSource(path));
+                        randItemCount++;
+                    }
+                }
+
+                // for (Integer index : getRandomAble()) {
+                //     String path = getImg()[index];
+
+                //     items[randItemCount] = (ImageLoader.loadImageFromExternalSource(path));
+                //     randItemCount++;
+                // }
+
+                randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+((canvas.getWidth()/(3*2))), canvas.getWidth()/2, canvas.getWidth()/2, items, 135);
 
                 // TODO: random logic
                 int min = 0; // inclusive
@@ -182,7 +206,15 @@ public class App implements Runnable{
                  + " stock is " + getStock()[getRandomAble().get(result)]
                  + " stock will become " + Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 
-                randomResultIndex = result;
+
+                // random result index
+                for (int i = 0; i < enabledIndex.length; i++) {
+                    if(enabledIndex[i] == getRandomAble().get(result)) { // if index i is enabled
+                        System.out.println("enabledIndex[i]: " + enabledIndex[i] + " i: " + i + " price: " + getRandomAble().get(result));
+                        randomResultIndex = i;
+                        break;
+                    }
+                }
                 randomEnabled = true;
                 
                 Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
@@ -297,21 +329,24 @@ public class App implements Runnable{
             System.out.println("Setting up UI");
             setUpUI();
         }
-        uiManager.render(g);
-        itemManager.render(g);
 
         if(flareSmallTimer > 0 && flareSmallEnabled) {
-            flareSmallEndless.render(g);
+            // flareSmallEndless.render(g);
             flareSmallTimer--;
         }
 
         if(flareTimer > 0 && flareEnabled) {
-            flare.render(g);
+            // flare.render(g);
             flareTimer--;
         }
         
         if(flareTimer <= 0 && flareEndlessEnabled) {
-            flareEndless.render(g);
+            // flareEndless.render(g);
+        } 
+        
+        if(!flareSmallEnabled && !flareEnabled && !flareEndlessEnabled){
+            uiManager.render(g);
+            itemManager.render(g);
         }
 
         if(randomTimer > 0) {
@@ -493,9 +528,14 @@ public class App implements Runnable{
         int enabledItemCount = 0;
         ArrayList<Integer> randomAbleT = new ArrayList<Integer>();
         for (int i = 0; i < 6; i++) {
-            if (enableT[i] && stockT[i] > 0) { // if item is enable and have stock
-                randomAbleT.add(i);
+            if (enableT[i]) {
+
                 enabledItemCount++;
+
+                if(stockT[i] > 0) { // if item is enable and have stock
+                    randomAbleT.add(i);
+                }
+
             }
         }
         this.setRandomAble(randomAbleT);
@@ -539,9 +579,10 @@ public class App implements Runnable{
         // Assign layout
         int slotCount = 0;
         for (int i = 0; i < 6; i++) {
-            if (enableT[i] && stockT[i] > 0) { // if item is enable 
+            // if (enableT[i] && stockT[i] > 0) { // if item is enable
+            if (enableT[i]) { // if item is enable
 
-                itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], 150, 150, ImageLoader.loadImageFromExternalSource(imgT[i]), null));
+                itemManager.addObject(new UIImage(posX[slotCount], posY[slotCount], (canvas.getWidth()/4), (canvas.getWidth()/4), ImageLoader.loadImageFromExternalSource(imgT[i]), null));
                 slotCount++;
             }
         }
