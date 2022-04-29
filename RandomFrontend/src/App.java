@@ -86,24 +86,24 @@ public class App implements Runnable{
         // Frame settings
         // Screen size
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        // frame.setSize(screenSize.width, screenSize.height);
-        frame.setSize(width, height); // BG is 16:9 (1080x1920)
-        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
-        // frame.setUndecorated(true); // Hide menu bar
+        frame.setSize(screenSize.width, screenSize.height);
+        // frame.setSize(width, height); // BG is 16:9 (1080x1920)
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        frame.setUndecorated(true); // Hide menu bar
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
         // Canvas settings
-        // canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
-        // canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
-        // canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
+        canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
+        canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
+        canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
 
 
-        canvas.setPreferredSize(new Dimension(width, height));
-        canvas.setMaximumSize(new Dimension(width, height));
-        canvas.setMinimumSize(new Dimension(width, height));
+        // canvas.setPreferredSize(new Dimension(width, height));
+        // canvas.setMaximumSize(new Dimension(width, height));
+        // canvas.setMinimumSize(new Dimension(width, height));
 
         frame.add(canvas);
         frame.pack();
