@@ -85,25 +85,25 @@ public class App implements Runnable{
 
         // Frame settings
         // Screen size
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize.width, screenSize.height);
-        // frame.setSize(width, height); // BG is 16:9 (1080x1920)
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
-        frame.setUndecorated(true); // Hide menu bar
+        // Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        // frame.setSize(screenSize.width, screenSize.height);
+        frame.setSize(width, height); // BG is 16:9 (1080x1920)
+        // frame.setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximize window
+        // frame.setUndecorated(true); // Hide menu bar
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
         // Canvas settings
-        canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
-        canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
-        canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setPreferredSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setMaximumSize(new Dimension(screenSize.width, screenSize.height));
+        // canvas.setMinimumSize(new Dimension(screenSize.width, screenSize.height));
 
 
-        // canvas.setPreferredSize(new Dimension(width, height));
-        // canvas.setMaximumSize(new Dimension(width, height));
-        // canvas.setMinimumSize(new Dimension(width, height));
+        canvas.setPreferredSize(new Dimension(width, height));
+        canvas.setMaximumSize(new Dimension(width, height));
+        canvas.setMinimumSize(new Dimension(width, height));
 
         frame.add(canvas);
         frame.pack();
@@ -188,10 +188,32 @@ public class App implements Runnable{
                 randomItems = new ScaledImage((canvas.getWidth()/2), (canvas.getHeight()/2)+((canvas.getWidth()/(3*2))), canvas.getWidth()/2, canvas.getWidth()/2, items, 135);
 
                 // TODO: random logic
+                // get stock
+                int[] stockT2 = getStock();
+                int cumulativeBreakPoint[] = new int[6];
+                int stockSum = 0;
+                for (int i = 0; i < stockT2.length; i++) {
+                    if (enableT2[i]) {
+                        cumulativeBreakPoint[i] = stockT2[i] + stockSum;
+                        System.out.println("Cumu: " + cumulativeBreakPoint[i] + " stock[i]: " + stockT2[i] + " stockSum: " + stockSum);
+                        stockSum += stockT2[i];
+                    }
+                }
+
                 int min = 0; // inclusive
-                int max = getRandomAble().size()-1; // exclusive
+                // int max = getRandomAble().size()-1; // exclusive
+                int max = stockSum - 1;
                 System.out.println("Random between:" + min + " and " + max);
                 int result = ThreadLocalRandom.current().nextInt(min, max + 1);
+
+                // map result
+                int priceIndex = 0;
+                for (int i = 0; i < cumulativeBreakPoint.length; i++) {
+                    if (enableT2[i] && result < cumulativeBreakPoint[i]) {
+                        priceIndex = i;
+                        break;
+                    }
+                }
 
                 // printing initial value
                 System.out.print("The initial values in `randomAble` are : ");
@@ -200,30 +222,36 @@ public class App implements Runnable{
                     System.out.print(" ");
                 }
 
-                System.out.println();
-                System.out.println("Randomed index is: " + result
-                 + " price is " + getRandomAble().get(result)
-                 + " stock is " + getStock()[getRandomAble().get(result)]
-                 + " stock will become " + Integer.toString(getStock()[getRandomAble().get(result)] - 1));
+                // System.out.println();
+                // System.out.println("Randomed index is: " + result
+                //  + " price is " + getRandomAble().get(result)
+                //  + " stock is " + getStock()[getRandomAble().get(result)]
+                //  + " stock will become " + Integer.toString(getStock()[getRandomAble().get(result)] - 1));
                 
+                System.out.println();
+                System.out.println("Randomed stock num is: " + result
+                + " price is " + priceIndex
+                + " stock is " + getStock()[priceIndex]
+                + " stock will become " + Integer.toString(getStock()[priceIndex] - 1));
+                 
 
                 // random result index
                 for (int i = 0; i < enabledIndex.length; i++) {
-                    if(enabledIndex[i] == getRandomAble().get(result)) { // if index i is enabled
-                        System.out.println("enabledIndex[i]: " + enabledIndex[i] + " i: " + i + " price: " + getRandomAble().get(result));
+                    if(enabledIndex[i] == priceIndex) { // if index i is enabled
+                        System.out.println("enabledIndex[i]: " + enabledIndex[i] + " i: " + i + " price: " + priceIndex);
                         randomResultIndex = i;
                         break;
                     }
                 }
                 randomEnabled = true;
                 
-                Boolean res = setProperty("item."+Integer.toString(getRandomAble().get(result))+".stock", Integer.toString(getStock()[getRandomAble().get(result)] - 1));
+                Boolean res = setProperty("item."+Integer.toString(priceIndex)+".stock", Integer.toString(getStock()[priceIndex] - 1));
                 System.out.println("Update res: " + res);
 
                 // Save to csv
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                 // System.out.println(timestamp);
-                String dataToWrite = timestamp + "," + getName()[getRandomAble().get(result)] + "," + Integer.toString(getStock()[getRandomAble().get(result)] - 1);
+                String dataToWrite = timestamp + "," + getName()[priceIndex] + "," + Integer.toString(getStock()[priceIndex] - 1);
 
                 try {
                     // you want to output to file
