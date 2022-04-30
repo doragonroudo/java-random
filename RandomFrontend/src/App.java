@@ -56,6 +56,7 @@ public class App implements Runnable{
     Background flareEndless;
     Background flareSmallEndless;
     ScaledImage randomItems;
+    ScaledImage backBtns;
     double randomTimer = 0;
     double flareTimer = 0;
     double flareSmallTimer = 0;
@@ -133,7 +134,12 @@ public class App implements Runnable{
         BufferedImage[] items = new BufferedImage[1];
         String path = getImg()[getRandomAble().get(0)];
         items[0] = (ImageLoader.loadImageFromExternalSource(path));
-        randomItems = new ScaledImage((canvas.getWidth()/6)*3, (canvas.getHeight()/12)*7, (int) ((canvas.getWidth()/2)*1.5), (int) ((canvas.getWidth()/2)*1.5), items, 135);
+        randomItems = new ScaledImage((canvas.getWidth()/6)*3, (canvas.getHeight()/12)*6, (int) ((canvas.getWidth()/2)*1.5), (int) ((canvas.getWidth()/2)*1.5), items, 135);
+
+        // front end of back
+        BufferedImage[] btns = new BufferedImage[1];
+        btns[0] = (ImageLoader.loadImage("/img/btn_back.png"));
+        backBtns = new ScaledImage(((canvas.getWidth()/6)*3), ((canvas.getHeight()/12)*9), 283, 100, btns, 135);
 
         uiManager.addObject(new UIImageButton((canvas.getWidth()/6)*3 - (283/2), ((canvas.getHeight()/12)*7 - (100/2)), 283, 100, Assets.randBtn, new ClickListener(){
 
@@ -185,7 +191,7 @@ public class App implements Runnable{
                 //     randItemCount++;
                 // }
 
-                randomItems = new ScaledImage((canvas.getWidth()/6)*3, (canvas.getHeight()/12)*7, (int) ((canvas.getWidth()/2)*1.5), (int) ((canvas.getWidth()/2)*1.5), items, 135);
+                randomItems = new ScaledImage((canvas.getWidth()/6)*3, (canvas.getHeight()/12)*6, (int) ((canvas.getWidth()/2)*1.5), (int) ((canvas.getWidth()/2)*1.5), items, 135);
 
                 // TODO: random logic
                 // get stock
@@ -273,8 +279,7 @@ public class App implements Runnable{
             }
 
         }));
-
-        uiManager.addObject(new UIImageButton(0, 0, canvas.getWidth(), canvas.getHeight(), new BufferedImage[2], new ClickListener() {
+        uiManager.addObject(new UIImageButton((canvas.getWidth()/6)*3 - (283/2), ((canvas.getHeight()/12)*9 - (100/2)), 283, 100, new BufferedImage[2], new ClickListener() {
 
             @Override
             public void onClick() {
@@ -296,6 +301,7 @@ public class App implements Runnable{
             }
             
         }));
+        
     }
 
     private void tick() {
@@ -322,6 +328,7 @@ public class App implements Runnable{
 
         if(flareTimer <= 0 && flareEndlessEnabled) {
             flareEndless.tick();
+            backBtns.tick();
         }
 
         if(randomTimer > 0 && randomEnabled) {
@@ -370,6 +377,7 @@ public class App implements Runnable{
         
         if(flareTimer <= 0 && flareEndlessEnabled) {
             // flareEndless.render(g);
+            backBtns.render(g);
         } 
         
         if(!flareSmallEnabled && !flareEnabled && !flareEndlessEnabled){

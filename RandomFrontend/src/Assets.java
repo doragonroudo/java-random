@@ -6,6 +6,7 @@ public class Assets {
 	public static BufferedImage bgStatic;
     public static BufferedImage[] bg;
     public static BufferedImage[] randBtn; // 1613 × 569
+    public static BufferedImage[] backBtn; // 1613 × 569
     public static BufferedImage[] flare;
     public static BufferedImage[] flareEndless;
 
@@ -21,6 +22,7 @@ public class Assets {
         SpriteSheet bgSheet = new SpriteSheet(ImageLoader.loadImage("/img/bg_new_sprite.jpg"));
 		SpriteSheet btnSheet = new SpriteSheet(ImageLoader.loadImage("/img/btn_sprite.png"));
 		SpriteSheet flareSheet = new SpriteSheet(ImageLoader.loadImage("/img/flare_sprite_recolored.png"));
+		SpriteSheet btnBackSheet = new SpriteSheet(ImageLoader.loadImage("/img/btn_back.png"));
 		
         int width = 1080, height = 1920;
         int bwidth = 1613, bheight = 569;
@@ -34,6 +36,10 @@ public class Assets {
         randBtn = new BufferedImage[2];
         for (int i = 0; i < 2; i++) {
             randBtn[i] = btnSheet.crop(i * bwidth, 0, bwidth, bheight);
+        }
+        backBtn = new BufferedImage[2];
+        for (int i = 0; i < 2; i++) {
+            backBtn[i] = btnBackSheet.crop(0, 0, bwidth, bheight);
         }
         flare = new BufferedImage[20];
         for (int y = 0; y < 4; y++) {
