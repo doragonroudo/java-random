@@ -18,7 +18,7 @@ public class Assets {
 		// stone = sheet.crop(width * 3, 0, width, height);
 		// tree = sheet.crop(0, height, width, height);
 
-        SpriteSheet bgSheet = new SpriteSheet(ImageLoader.loadImage("/img/bg_sprite.jpg"));
+        SpriteSheet bgSheet = new SpriteSheet(ImageLoader.loadImage("/img/bg_new_sprite.jpg"));
 		SpriteSheet btnSheet = new SpriteSheet(ImageLoader.loadImage("/img/btn_sprite.png"));
 		SpriteSheet flareSheet = new SpriteSheet(ImageLoader.loadImage("/img/flare_sprite_recolored.png"));
 		
@@ -27,8 +27,8 @@ public class Assets {
         int fwidth = 192, fheight = 192;
 
         bgStatic = bgSheet.crop(0, 0, width, height);
-        bg = new BufferedImage[31];
-        for (int i = 0; i < 31; i++) {
+        bg = new BufferedImage[21];
+        for (int i = 0; i < 21; i++) {
             bg[i] = bgSheet.crop(i * width, 0, width, height);
         }
         randBtn = new BufferedImage[2];
